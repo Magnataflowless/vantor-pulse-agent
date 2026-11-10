@@ -9,7 +9,11 @@
     <MediaTemplate EmbedCab="yes" />
 
     <Property Id="TOKEN" Secure="yes" />
+    <?ifdef DefaultServer?>
     <Property Id="SERVER" Value="$(DefaultServer)" Secure="yes" />
+    <?else?>
+    <Property Id="SERVER" Secure="yes" />
+    <?endif?>
     <Property Id="ARPHELPLINK" Value="https://github.com/Magnataflowless/vantor-pulse-agent" />
 
     <StandardDirectory Id="ProgramFiles64Folder">

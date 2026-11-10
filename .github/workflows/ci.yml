@@ -33,7 +33,9 @@ jobs:
         shell: bash
         run: |
           dotnet tool install --global wix --version 5.0.2
-          wix build installer/vantor.wxs -arch x64 -d Version=${{ steps.v.outputs.version }} -d BinDir=dist -d "DefaultServer=${{ vars.VANTOR_SERVER }}" -o dist/VantorPulse.msi
+          # Endereço padrão do servidor (variável do repositório VANTOR_SERVER); sem ele, instale com SERVER=https://...
+          extra=(); [ -n "${{ vars.VANTOR_SERVER }}" ] && extra=(-d "DefaultServer=${{ vars.VANTOR_SERVER }}")
+          wix build installer/vantor.wxs -arch x64 -d Version=${{ steps.v.outputs.version }} -d BinDir=dist "${extra[@]}" -o dist/VantorPulse.msi
           sha256sum dist/VantorPulse.msi dist/vantor-agent.exe | tee dist/SHA256SUMS.txt
       - uses: actions/upload-artifact@v4
         with:
