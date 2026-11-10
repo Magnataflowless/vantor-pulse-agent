@@ -36,9 +36,12 @@ jobs:
           wix build installer/vantor.wxs -arch x64 -d Version=${{ steps.v.outputs.version }} -d BinDir=dist -d "DefaultServer=${{ vars.VANTOR_SERVER }}" -o dist/VantorPulse.msi
           sha256sum dist/VantorPulse.msi dist/vantor-agent.exe | tee dist/SHA256SUMS.txt
       - uses: actions/upload-artifact@v4
-        with: { name: vantor-agent-${{ steps.v.outputs.version }}, path: dist/ }
+        with:
+          name: vantor-agent-${{ steps.v.outputs.version }}
+          path: dist/
       - name: Publicar versão
         if: startsWith(github.ref, 'refs/tags/v')
         shell: bash
-        env: { GH_TOKEN: "${{ github.token }}" }
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: gh release create "$GITHUB_REF_NAME" dist/VantorPulse.msi dist/vantor-agent.exe dist/SHA256SUMS.txt --title "Vantor Pulse $GITHUB_REF_NAME" --notes "Instalador do agente. SHA-256 em SHA256SUMS.txt."
