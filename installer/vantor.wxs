@@ -1,0 +1,43 @@
+<!-- Instalador do Vantor Pulse (WiX Toolset v5, licença MS-RL, gratuito).
+     Uso: msiexec /i VantorPulse.msi TOKEN=<código da empresa> [SERVER=https://...] /qn
+     Ou salve como VantorPulse_<código>.msi: o agente lê o código no nome do arquivo. -->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Package Name="Vantor Pulse" Manufacturer="Vantor Pulse" Version="$(Version)" Language="1046" Codepage="1252"
+           UpgradeCode="9A3C2E61-6B1D-4C2F-9E57-2B8F7C1D4A10" Scope="perMachine">
+    <SummaryInformation Description="Agente transparente de produtividade" />
+    <MajorUpgrade DowngradeErrorMessage="Uma versão mais nova do Vantor Pulse já está instalada." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <Property Id="TOKEN" Secure="yes" />
+    <?ifdef DefaultServer?>
+    <Property Id="SERVER" Value="$(DefaultServer)" Secure="yes" />
+    <?else?>
+    <Property Id="SERVER" Secure="yes" />
+    <?endif?>
+    <Property Id="ARPHELPLINK" Value="https://github.com/Magnataflowless/vantor-pulse-agent" />
+
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="VantorPulse">
+        <Component Id="Agent" Guid="6E0F4B7A-8C2D-4E19-A3B5-1F2C3D4E5F60">
+          <File Id="AgentExe" Source="$(BinDir)\vantor-agent.exe" KeyPath="yes" />
+          <ServiceInstall Name="VantorPulse" DisplayName="Vantor Pulse"
+                          Description="Agente transparente de produtividade. Só registra no horário de trabalho, com o Termo de Ciência aceito."
+                          Start="auto" Type="ownProcess" ErrorControl="normal" Account="LocalSystem" Arguments="service" Vital="yes" />
+          <ServiceControl Id="AgentSvc" Name="VantorPulse" Start="install" Stop="both" Remove="uninstall" Wait="yes" />
+        </Component>
+        <Component Id="Settings" Guid="0B1C2D3E-4F50-4617-8293-A4B5C6D7E8F9">
+          <RegistryKey Root="HKLM" Key="SOFTWARE\VantorPulse">
+            <RegistryValue Name="Server" Type="string" Value="[SERVER]" KeyPath="yes" />
+            <RegistryValue Name="Token" Type="string" Value="[TOKEN]" />
+            <RegistryValue Name="MsiPath" Type="string" Value="[OriginalDatabase]" />
+          </RegistryKey>
+        </Component>
+      </Directory>
+    </StandardDirectory>
+
+    <Feature Id="Main">
+      <ComponentRef Id="Agent" />
+      <ComponentRef Id="Settings" />
+    </Feature>
+  </Package>
+</Wix>

@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with: { go-version-file: go.mod }
+      - name: Formatação e vet
+        shell: bash
+        run: test -z "$(gofmt -l .)" && go vet ./...
+      - name: Testes
+        run: go test -timeout 120s ./...
+      - name: Versão
+        id: v
+        shell: bash
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then echo "version=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT; else echo "version=0.0.$GITHUB_RUN_NUMBER" >> $GITHUB_OUTPUT; fi
+      - name: Build (sem console, roda como serviço)
+        shell: bash
+        run: go build -trimpath -ldflags "-s -w -H windowsgui -X github.com/Magnataflowless/vantor-pulse-agent/internal/agent.Version=${{ steps.v.outputs.version }}" -o dist/vantor-agent.exe ./cmd/vantor-agent
+      - name: Instalador MSI (WiX v5, gratuito)
+        shell: bash
+        run: |
+          dotnet tool install --global wix --version 5.0.2
+          # Endereço padrão do servidor (variável do repositório VANTOR_SERVER); sem ele, instale com SERVER=https://...
+          extra=(); [ -n "${{ vars.VANTOR_SERVER }}" ] && extra=(-d "DefaultServer=${{ vars.VANTOR_SERVER }}")
+          wix build installer/vantor.wxs -arch x64 -d Version=${{ steps.v.outputs.version }} -d BinDir=dist "${extra[@]}" -o dist/VantorPulse.msi
+          sha256sum dist/VantorPulse.msi dist/vantor-agent.exe | tee dist/SHA256SUMS.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vantor-agent-${{ steps.v.outputs.version }}
+          path: dist/
+      - name: Publicar versão
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" dist/VantorPulse.msi dist/vantor-agent.exe dist/SHA256SUMS.txt --title "Vantor Pulse $GITHUB_REF_NAME" --notes "Instalador do agente. SHA-256 em SHA256SUMS.txt."
