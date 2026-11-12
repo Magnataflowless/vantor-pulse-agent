@@ -47,3 +47,50 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh release create "$GITHUB_REF_NAME" dist/VantorPulse.msi dist/vantor-agent.exe dist/SHA256SUMS.txt --title "Vantor Pulse $GITHUB_REF_NAME" --notes "Instalador do agente. SHA-256 em SHA256SUMS.txt."
+
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with: { go-version-file: go.mod }
+      - name: Formatação e vet
+        run: test -z "$(gofmt -l .)" && go vet ./...
+      - name: Testes
+        run: go test -timeout 120s ./...
+      - name: Versão
+        id: v
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then echo "version=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT; else echo "version=0.0.$GITHUB_RUN_NUMBER" >> $GITHUB_OUTPUT; fi
+      - name: Build (amd64 e arm64, Go puro, sem cgo)
+        run: |
+          for arch in amd64 arm64; do
+            CGO_ENABLED=0 GOOS=linux GOARCH=$arch go build -trimpath -ldflags "-s -w -X github.com/Magnataflowless/vantor-pulse-agent/internal/agent.Version=${{ steps.v.outputs.version }}" -o dist/vantor-agent-linux-$arch ./cmd/vantor-agent
+          done
+      - name: Pacotes .deb (nfpm, gratuito)
+        run: |
+          go install github.com/goreleaser/nfpm/v2/cmd/nfpm@v2.41.1
+          for arch in amd64 arm64; do
+            ARCH=$arch VERSION=${{ steps.v.outputs.version }} nfpm package -f packaging/linux/nfpm.yaml -p deb -t dist/vantor-agent_${{ steps.v.outputs.version }}_$arch.deb
+          done
+          (cd dist && sha256sum *.deb vantor-agent-linux-* | tee SHA256SUMS-linux.txt)
+      - name: Conferência do pacote
+        run: |
+          dpkg-deb -c dist/vantor-agent_*_amd64.deb
+          sudo dpkg -i dist/vantor-agent_*_amd64.deb
+          vantor-agent version
+          test -f /usr/lib/systemd/user/vantor-agent.service
+          # Sem servidor, a matrícula falha com mensagem clara (e sem travar).
+          ! sudo vantor-agent enroll 2>&1 | tee /dev/stderr | grep -q panic
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vantor-agent-linux-${{ steps.v.outputs.version }}
+          path: dist/
+      - name: Publicar versão
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # O job do Windows cria a versão; espera ela existir e anexa os arquivos do Linux.
+          for i in $(seq 1 30); do gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 && break; sleep 20; done
+          gh release upload "$GITHUB_REF_NAME" dist/*.deb dist/vantor-agent-linux-* dist/SHA256SUMS-linux.txt --clobber

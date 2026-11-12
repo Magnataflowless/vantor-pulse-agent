@@ -1,5 +1,3 @@
-//go:build windows
-
 package agent
 
 import (
@@ -7,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"sync"
 	"time"
@@ -15,7 +12,7 @@ import (
 	"fyne.io/systray"
 )
 
-// Collector roda na sessão de cada usuário do Windows: lê a janela em foco e a atividade,
+// Collector roda na sessão de cada usuário (Windows ou Linux): lê a janela em foco e a atividade,
 // mostra o ícone na bandeja e envia os minutos para a API.
 type Collector struct {
 	Dry bool // modo de teste: imprime os lotes em vez de enviar
@@ -120,7 +117,7 @@ func (c *Collector) onTrayReady() {
 				c.endPause("")
 			case <-c.tray.portal.ClickedCh:
 				if c.cfg != nil && c.cfg.PortalURL != "" {
-					_ = exec.Command("rundll32", "url.dll,FileProtocolHandler", c.cfg.PortalURL).Start()
+					OpenURL(c.cfg.PortalURL)
 				}
 			case <-c.tray.term.ClickedCh:
 				if c.cfg != nil && c.cfg.Term != nil {
@@ -178,7 +175,7 @@ func (c *Collector) step(now time.Time, sample bool) {
 		return
 	}
 	exe, title, hwnd := Foreground()
-	locked := exe == "" || exe == "lockapp.exe" || exe == "logonui.exe"
+	locked := exe == "" || IsLocked(exe)
 	if locked != c.locked && collecting {
 		kind := "unlock"
 		if locked {
@@ -229,6 +226,8 @@ func (c *Collector) setStatus(now time.Time, s string) {
 	switch {
 	case c.paused != nil:
 		s = "Em pausa"
+	case PlatformProblem() != "":
+		s = PlatformProblem()
 	case s != "":
 	case c.cfg == nil:
 		s = "Conectando ao servidor…"
