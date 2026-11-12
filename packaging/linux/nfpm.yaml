@@ -14,7 +14,7 @@ license: MIT
 recommends:
   - zenity
 contents:
-  - src: ./dist/vantor-agent-linux-${ARCH}
+  - src: ./dist/pkg/vantor-agent
     dst: /usr/bin/vantor-agent
     file_info: { mode: 0755 }
   - src: ./packaging/linux/vantor-agent.service

@@ -70,7 +70,9 @@ jobs:
       - name: Pacotes .deb (nfpm, gratuito)
         run: |
           go install github.com/goreleaser/nfpm/v2/cmd/nfpm@v2.41.1
+          mkdir -p dist/pkg
           for arch in amd64 arm64; do
+            cp dist/vantor-agent-linux-$arch dist/pkg/vantor-agent # o nfpm não expande variáveis no caminho dos arquivos
             ARCH=$arch VERSION=${{ steps.v.outputs.version }} nfpm package -f packaging/linux/nfpm.yaml -p deb -t dist/vantor-agent_${{ steps.v.outputs.version }}_$arch.deb
           done
           (cd dist && sha256sum *.deb vantor-agent-linux-* | tee SHA256SUMS-linux.txt)
@@ -85,7 +87,10 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: vantor-agent-linux-${{ steps.v.outputs.version }}
-          path: dist/
+          path: |
+            dist/*.deb
+            dist/vantor-agent-linux-*
+            dist/SHA256SUMS-linux.txt
       - name: Publicar versão
         if: startsWith(github.ref, 'refs/tags/v')
         env:
