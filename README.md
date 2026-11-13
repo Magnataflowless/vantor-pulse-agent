@@ -54,9 +54,26 @@ Enquanto o instalador não tiver assinatura digital (pedida à [SignPath Foundat
 
 Se o antivírus bloquear, adicione uma exceção para `C:\Program Files\VantorPulse\vantor-agent.exe`. Confira o SHA-256 do arquivo com o `SHA256SUMS.txt` publicado em cada versão.
 
+### Linux (Ubuntu, Debian, Mint e derivados, com sessão Xorg)
+
+1. Baixe o pacote da versão em **Releases**: `vantor-agent_<versão>_amd64.deb`, ou `_arm64.deb` para ARM.
+2. Instale e matricule o computador. O código da empresa e o endereço do painel aparecem no painel, em **Computadores**:
+
+   ```bash
+   sudo apt install ./vantor-agent_<versão>_amd64.deb
+   sudo vantor-agent enroll --server https://seu-servidor --token <código-da-empresa>
+   ```
+3. Cada usuário passa a ser registrado a partir do próximo login gráfico. O pacote liga o serviço `vantor-agent` do `systemd --user` para todos os usuários. O Termo de Ciência aparece numa janela do `zenity`.
+
+Limitações no Linux, por enquanto:
+- **Sessão Wayland:** o sistema esconde as janelas dos outros programas. O agente avisa no ícone e não registra. Na tela de login, escolha a sessão **Xorg** (ex.: "Ubuntu em Xorg").
+- **Sites:** o domínio do site ainda não é lido. O tempo aparece no navegador (ex.: `firefox`).
+- **Proteção dos arquivos:** não há DPAPI. O token do PC fica em `/etc/vantor-pulse`, e a chave da fila, só com permissão do próprio usuário (`0600`).
+- **Atualização:** pelo pacote novo (`apt install`). O botão "Atualizar" do painel vale só para o Windows.
+
 ### Desinstalar
 
-**Configurações → Aplicativos → Vantor Pulse → Desinstalar**, ou `msiexec /x VantorPulse.msi /qn`. O painel avisa o gestor quando um agente para de responder no horário de trabalho.
+**Configurações → Aplicativos → Vantor Pulse → Desinstalar**, ou `msiexec /x VantorPulse.msi /qn`. No Linux: `sudo apt remove vantor-agent`. O painel avisa o gestor quando um agente para de responder no horário de trabalho.
 
 ## Como funciona
 
@@ -74,10 +91,10 @@ go test ./...
 go build -ldflags "-H windowsgui -X github.com/Magnataflowless/vantor-pulse-agent/internal/agent.Version=0.1.0" -o dist/vantor-agent.exe ./cmd/vantor-agent
 ```
 
-O instalador é gerado pelo GitHub Actions a cada tag `v*` (WiX Toolset v5, gratuito) e publicado em **Releases**.
+O instalador é gerado pelo GitHub Actions a cada tag `v*` (WiX Toolset v5, gratuito) e publicado em **Releases**, junto com os pacotes `.deb` do Linux (nfpm, gratuito). Para testar no Linux: `CGO_ENABLED=0 GOOS=linux go build -o vantor-agent ./cmd/vantor-agent` e `./vantor-agent test`.
 Ícones da bandeja: `go run ./tools/mkicon`.
 
-Prioridade atual: Windows 10 e 11. Linux vem na Fase 3. macOS fica para depois, porque a Apple cobra para assinar aplicativos.
+Sistemas: Windows 10 e 11, e Linux com Xorg. O macOS fica para depois, porque a Apple cobra para assinar aplicativos.
 
 ## Licença
 

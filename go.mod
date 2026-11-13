@@ -5,6 +5,7 @@ go 1.27.3
 require (
 	fyne.io/systray v1.12.2
 	github.com/go-ole/go-ole v1.3.0
+	github.com/jezek/xgb v1.1.1
 	golang.org/x/sys v0.50.0
 	modernc.org/sqlite v1.62.0
 )

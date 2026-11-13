@@ -1,0 +1,16 @@
+# Coletor do Vantor Pulse na sessão gráfica de cada usuário (systemd --user).
+[Unit]
+Description=Vantor Pulse (registro de atividade no horário de trabalho)
+PartOf=graphical-session.target
+After=graphical-session.target
+
+[Service]
+ExecStart=/usr/bin/vantor-agent collect
+Restart=on-failure
+RestartSec=30
+# Limites de recursos: o agente não pode pesar no computador.
+MemoryMax=80M
+CPUQuota=5%
+
+[Install]
+WantedBy=graphical-session.target

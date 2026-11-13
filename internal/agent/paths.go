@@ -9,11 +9,9 @@ import (
 	"regexp"
 )
 
-// Pastas: ProgramData (do PC, escrita pelo serviço) e LocalAppData (de cada usuário, escrita pelo coletor).
-func MachineDir() string { return filepath.Join(os.Getenv("ProgramData"), "VantorPulse") }
-func UserDir() string    { return filepath.Join(os.Getenv("LOCALAPPDATA"), "VantorPulse") }
+// Pastas: MachineDir (do PC) e UserDir (de cada usuário) ficam nos arquivos de cada sistema.
 
-// Device é a identidade deste PC na API (gravada protegida pelo DPAPI).
+// Device é a identidade deste PC na API (no Windows, protegida pelo DPAPI).
 type Device struct {
 	Server   string `json:"server"`
 	DeviceID string `json:"deviceId"`

@@ -5,8 +5,8 @@ package agent
 import (
 	"crypto/rand"
 	"fmt"
-	"net"
 	"os"
+	"os/exec"
 	"os/user"
 	"path/filepath"
 	"strings"
@@ -33,6 +33,19 @@ var (
 )
 
 type rect struct{ Left, Top, Right, Bottom int32 }
+
+// Pastas: ProgramData (do PC, escrita pelo serviço) e LocalAppData (de cada usuário, escrita pelo coletor).
+func MachineDir() string { return filepath.Join(os.Getenv("ProgramData"), "VantorPulse") }
+func UserDir() string    { return filepath.Join(os.Getenv("LOCALAPPDATA"), "VantorPulse") }
+
+// IsLocked: tela de bloqueio ou de login do Windows em foco.
+func IsLocked(exe string) bool { return exe == "lockapp.exe" || exe == "logonui.exe" }
+
+// PlatformProblem: no Windows não há impedimento conhecido para a coleta.
+func PlatformProblem() string { return "" }
+
+// OpenURL abre um endereço no navegador padrão.
+func OpenURL(url string) { _ = exec.Command("rundll32", "url.dll,FileProtocolHandler", url).Start() }
 
 // Foreground devolve o executável (minúsculo), o título e o handle da janela em foco.
 func Foreground() (exe, title string, hwnd uintptr) {
@@ -194,31 +207,4 @@ func CollectInventory() Inventory {
 	}
 	inv.IP = localIP()
 	return inv
-}
-
-func localIP() string {
-	ifaces, _ := net.Interfaces()
-	for _, i := range ifaces {
-		if i.Flags&net.FlagUp == 0 || i.Flags&net.FlagLoopback != 0 {
-			continue
-		}
-		addrs, _ := i.Addrs()
-		for _, a := range addrs {
-			if ip, ok := a.(*net.IPNet); ok && ip.IP.To4() != nil && !ip.IP.IsLinkLocalUnicast() {
-				return ip.IP.String()
-			}
-		}
-	}
-	return ""
-}
-
-func atoi(s string) int {
-	n := 0
-	for _, c := range s {
-		if c < '0' || c > '9' {
-			break
-		}
-		n = n*10 + int(c-'0')
-	}
-	return n
 }
