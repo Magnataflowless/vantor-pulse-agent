@@ -22,7 +22,7 @@ import (
 	"golang.org/x/sys/windows/svc/mgr"
 )
 
-const ServiceName = "VantorPulse"
+const ServiceName = "DigivantPulse"
 
 // Service roda como LocalSystem: matricula o PC, garante um coletor em cada sessão aberta,
 // manda o inventário a cada minuto e aplica a atualização pedida pelo painel.
@@ -123,7 +123,7 @@ func ensureEnrolled() (*Device, error) {
 	if d, err := LoadDevice(); err == nil {
 		return d, nil
 	}
-	k, err := registry.OpenKey(registry.LOCAL_MACHINE, `SOFTWARE\VantorPulse`, registry.QUERY_VALUE)
+	k, err := registry.OpenKey(registry.LOCAL_MACHINE, `SOFTWARE\DigivantPulse`, registry.QUERY_VALUE)
 	if err != nil {
 		return nil, fmt.Errorf("instalação incompleta (sem registro): %w", err)
 	}
@@ -136,7 +136,7 @@ func ensureEnrolled() (*Device, error) {
 	}
 	server = strings.TrimRight(server, "/")
 	if server == "" || token == "" {
-		return nil, fmt.Errorf("faltou o servidor ou o código da empresa (instale com TOKEN=... SERVER=... ou pelo arquivo VantorPulse_<código>.msi)")
+		return nil, fmt.Errorf("faltou o servidor ou o código da empresa (instale com TOKEN=... SERVER=... ou pelo arquivo DigivantPulse_<código>.msi)")
 	}
 	id, devToken, err := NewClient(server, "").Enroll(token, CollectInventory())
 	if err != nil {
@@ -220,7 +220,7 @@ func applyUpdate(url, wantSHA string) error {
 	}
 	dir := filepath.Join(MachineDir(), "atualizacao")
 	_ = os.MkdirAll(dir, 0o755)
-	path := filepath.Join(dir, "VantorPulse.msi")
+	path := filepath.Join(dir, "DigivantPulse.msi")
 	res, err := http.Get(url)
 	if err != nil {
 		return err
@@ -254,7 +254,7 @@ func InstallService(exe string) error {
 		return err
 	}
 	defer m.Disconnect()
-	s, err := m.CreateService(ServiceName, exe, mgr.Config{DisplayName: "Vantor Pulse", Description: "Agente transparente de produtividade (Vantor Pulse).", StartType: mgr.StartAutomatic}, "service")
+	s, err := m.CreateService(ServiceName, exe, mgr.Config{DisplayName: "Digivant Pulse", Description: "Agente transparente de produtividade (Digivant Pulse).", StartType: mgr.StartAutomatic}, "service")
 	if err != nil {
 		return err
 	}

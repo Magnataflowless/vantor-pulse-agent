@@ -1,11 +1,11 @@
 //go:build windows
 
-// vantor-agent: agente do Vantor Pulse para Windows.
+// digivant-agent: agente do Digivant Pulse para Windows.
 //
-//	vantor-agent service    roda como serviço (o MSI registra assim)
-//	vantor-agent collect    coletor da sessão do usuário (aberto pelo serviço)
-//	vantor-agent test       mostra no console, a cada minuto, exatamente o que seria enviado
-//	vantor-agent version
+//	digivant-agent service    roda como serviço (o MSI registra assim)
+//	digivant-agent collect    coletor da sessão do usuário (aberto pelo serviço)
+//	digivant-agent test       mostra no console, a cada minuto, exatamente o que seria enviado
+//	digivant-agent version
 package main
 
 import (
@@ -54,7 +54,7 @@ func main() {
 	case "version":
 		fmt.Println(agent.Version)
 	default:
-		fmt.Println("uso: vantor-agent service | collect | test | version")
+		fmt.Println("uso: digivant-agent service | collect | test | version")
 		os.Exit(2)
 	}
 }

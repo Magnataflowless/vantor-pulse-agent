@@ -1,11 +1,11 @@
 //go:build linux
 
-// vantor-agent: agente do Vantor Pulse para Linux (desktop X11).
+// digivant-agent: agente do Digivant Pulse para Linux (desktop X11).
 //
-//	sudo vantor-agent enroll --server https://... --token CODIGO   matricula o PC (uma vez, como root)
-//	vantor-agent collect    coletor da sessão do usuário (o systemd --user abre no login)
-//	vantor-agent test       mostra no terminal, a cada minuto, exatamente o que seria enviado
-//	vantor-agent version
+//	sudo digivant-agent enroll --server https://... --token CODIGO   matricula o PC (uma vez, como root)
+//	digivant-agent collect    coletor da sessão do usuário (o systemd --user abre no login)
+//	digivant-agent test       mostra no terminal, a cada minuto, exatamente o que seria enviado
+//	digivant-agent version
 package main
 
 import (
@@ -35,11 +35,11 @@ func main() {
 		token := fs.String("token", "", "código da empresa (painel > Computadores)")
 		_ = fs.Parse(os.Args[2:])
 		if os.Geteuid() != 0 {
-			fmt.Fprintln(os.Stderr, "rode como administrador: sudo vantor-agent enroll --server ... --token ...")
+			fmt.Fprintln(os.Stderr, "rode como administrador: sudo digivant-agent enroll --server ... --token ...")
 			os.Exit(1)
 		}
 		check(agent.Enroll(*server, *token))
-		fmt.Println("Computador matriculado. O registro começa no próximo login de cada usuário (ou agora: systemctl --user start vantor-agent).")
+		fmt.Println("Computador matriculado. O registro começa no próximo login de cada usuário (ou agora: systemctl --user start digivant-agent).")
 	case "collect":
 		if err := (&agent.Collector{}).Run(); err != nil {
 			log.Fatal(err)
@@ -52,7 +52,7 @@ func main() {
 	case "version":
 		fmt.Println(agent.Version)
 	default:
-		fmt.Println("uso: vantor-agent enroll --server URL --token CODIGO | collect | test | version")
+		fmt.Println("uso: digivant-agent enroll --server URL --token CODIGO | collect | test | version")
 		os.Exit(2)
 	}
 }

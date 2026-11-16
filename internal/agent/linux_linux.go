@@ -23,14 +23,14 @@ import (
 	"github.com/jezek/xgb/xproto"
 )
 
-// Pastas: /etc/vantor-pulse (do PC, gravada pelo "vantor-agent enroll" como root) e ~/.local/share/vantor-pulse (de cada usuário).
-func MachineDir() string { return "/etc/vantor-pulse" }
+// Pastas: /etc/digivant-pulse (do PC, gravada pelo "digivant-agent enroll" como root) e ~/.local/share/digivant-pulse (de cada usuário).
+func MachineDir() string { return "/etc/digivant-pulse" }
 func UserDir() string {
 	if d := os.Getenv("XDG_DATA_HOME"); d != "" {
-		return filepath.Join(d, "vantor-pulse")
+		return filepath.Join(d, "digivant-pulse")
 	}
 	home, _ := os.UserHomeDir()
-	return filepath.Join(home, ".local", "share", "vantor-pulse")
+	return filepath.Join(home, ".local", "share", "digivant-pulse")
 }
 
 var x11 struct {
@@ -267,7 +267,7 @@ func CollectInventory() Inventory {
 	return inv
 }
 
-// Enroll matricula este PC (rodar como root na instalação): grava o servidor e o token em /etc/vantor-pulse.
+// Enroll matricula este PC (rodar como root na instalação): grava o servidor e o token em /etc/digivant-pulse.
 func Enroll(server, token string) error {
 	server = strings.TrimRight(server, "/")
 	if server == "" || token == "" {

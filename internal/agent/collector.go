@@ -89,8 +89,8 @@ func waitDevice() (*Device, error) {
 
 func (c *Collector) onTrayReady() {
 	systray.SetIcon(iconGreen)
-	systray.SetTitle("Vantor Pulse")
-	c.tray.status = systray.AddMenuItem("Vantor Pulse", "")
+	systray.SetTitle("Digivant Pulse")
+	c.tray.status = systray.AddMenuItem("Digivant Pulse", "")
 	c.tray.status.Disable()
 	systray.AddSeparator()
 	pause := systray.AddMenuItem("Pausar", "Registrar uma pausa")
@@ -124,7 +124,7 @@ func (c *Collector) onTrayReady() {
 					Notify("Termo de Ciência", c.cfg.Term.Body)
 				}
 			case <-c.tray.about.ClickedCh:
-				Notify("O que o Vantor Pulse registra", aboutText)
+				Notify("O que o Digivant Pulse registra", aboutText)
 			}
 		}
 	}()
@@ -245,7 +245,7 @@ func (c *Collector) setStatus(now time.Time, s string) {
 	}
 	c.status = s
 	c.tray.status.SetTitle(s)
-	systray.SetTooltip("Vantor Pulse: " + s)
+	systray.SetTooltip("Digivant Pulse: " + s)
 	switch {
 	case c.paused != nil:
 		systray.SetIcon(iconBlue)
@@ -264,7 +264,7 @@ func (c *Collector) ensureConsent() {
 	c.asking = true
 	term := *c.cfg.Term
 	go func() {
-		ok := Ask("Vantor Pulse: Termo de Ciência", term.Body+"\n\nVocê declara que leu e está ciente? (Sim = aceito)")
+		ok := Ask("Digivant Pulse: Termo de Ciência", term.Body+"\n\nVocê declara que leu e está ciente? (Sim = aceito)")
 		c.mu.Lock()
 		defer c.mu.Unlock()
 		c.asking = false
@@ -285,7 +285,7 @@ func (c *Collector) startPause(r PauseReason) {
 	}
 	c.resetPauseDay()
 	if r.DailyLimitMin > 0 && c.state.PauseUsedMin[r.ID] >= r.DailyLimitMin {
-		go Notify("Vantor Pulse", fmt.Sprintf("O limite diário de %s (%d min) já foi usado hoje.", r.Label, r.DailyLimitMin))
+		go Notify("Digivant Pulse", fmt.Sprintf("O limite diário de %s (%d min) já foi usado hoje.", r.Label, r.DailyLimitMin))
 		return
 	}
 	now := time.Now()
@@ -321,7 +321,7 @@ func (c *Collector) endPause(onlyStartedAt string) {
 		c.saveState()
 	}
 	if reason != "" {
-		go Notify("Vantor Pulse", "O limite diário desta pausa acabou. O registro voltou.")
+		go Notify("Digivant Pulse", "O limite diário desta pausa acabou. O registro voltou.")
 	}
 	c.paused = nil
 	c.live = Live{}

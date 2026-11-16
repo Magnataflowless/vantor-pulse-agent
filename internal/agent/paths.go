@@ -62,9 +62,9 @@ func newID() string {
 	return hex.EncodeToString(b)
 }
 
-var msiToken = regexp.MustCompile(`(?i)VantorPulse_([A-Za-z0-9_-]{16,64})`)
+var msiToken = regexp.MustCompile(`(?i)DigivantPulse_([A-Za-z0-9_-]{16,64})`)
 
-// TokenFromMsiName lê o código da empresa no nome do instalador ("VantorPulse_<token> (1).msi").
+// TokenFromMsiName lê o código da empresa no nome do instalador ("DigivantPulse_<token> (1).msi").
 func TokenFromMsiName(path string) string {
 	if m := msiToken.FindStringSubmatch(filepath.Base(path)); m != nil {
 		return m[1]
