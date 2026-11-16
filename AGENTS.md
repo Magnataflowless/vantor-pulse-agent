@@ -1,4 +1,4 @@
-# AGENTS.md — Vantor Pulse (vantor-pulse-agent)
+# AGENTS.md — Digivant Pulse (vantor-pulse-agent)
 
 Regras para qualquer agente (de qualquer modelo) e para pessoas que trabalham neste repositório.
 

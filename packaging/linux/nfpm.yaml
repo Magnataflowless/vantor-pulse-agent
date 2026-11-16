@@ -1,24 +1,24 @@
 # Pacote .deb do agente (nfpm, gratuito, MIT). Gerado pelo CI.
-name: vantor-agent
+name: digivant-agent
 arch: ${ARCH}
 platform: linux
 version: ${VERSION}
 section: utils
 priority: optional
-maintainer: Vantor Pulse
+maintainer: Digivant Pulse
 description: |
-  Agente do Vantor Pulse para Linux (desktop X11). Registra, só no horário de trabalho e com o Termo de
+  Agente do Digivant Pulse para Linux (desktop X11). Registra, só no horário de trabalho e com o Termo de
   Ciência aceito: programa em uso, título da janela e atividade de teclado/mouse (nunca o que é digitado).
 homepage: https://github.com/Magnataflowless/vantor-pulse-agent
 license: MIT
 recommends:
   - zenity
 contents:
-  - src: ./dist/pkg/vantor-agent
-    dst: /usr/bin/vantor-agent
+  - src: ./dist/pkg/digivant-agent
+    dst: /usr/bin/digivant-agent
     file_info: { mode: 0755 }
-  - src: ./packaging/linux/vantor-agent.service
-    dst: /usr/lib/systemd/user/vantor-agent.service
+  - src: ./packaging/linux/digivant-agent.service
+    dst: /usr/lib/systemd/user/digivant-agent.service
 scripts:
   postinstall: ./packaging/linux/postinstall.sh
   preremove: ./packaging/linux/preremove.sh

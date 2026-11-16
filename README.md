@@ -1,6 +1,6 @@
-# Vantor Pulse: agente para Windows
+# Digivant Pulse: agente para Windows
 
-Programa leve, de código aberto (MIT), que roda nos computadores da empresa e alimenta o painel do Vantor Pulse.
+Programa leve, de código aberto (MIT), que roda nos computadores da empresa e alimenta o painel do Digivant Pulse.
 O código é público para que qualquer colaborador, empresa ou auditor possa conferir exatamente o que ele faz.
 
 ## O que ele registra
@@ -20,7 +20,7 @@ Só **no horário de trabalho** configurado pela empresa, só **depois que o col
 Para ver com os próprios olhos o que seria enviado, rode no Prompt de Comando:
 
 ```bat
-"C:\Program Files\VantorPulse\vantor-agent.exe" test
+"C:\Program Files\DigivantPulse\digivant-agent.exe" test
 ```
 
 A cada minuto aparece o lote completo, e nada é enviado.
@@ -35,14 +35,14 @@ A cada minuto aparece o lote completo, e nada é enviado.
 
 ### Um computador
 
-1. No painel, em **Computadores**, clique em **Baixar instalador**. O arquivo vem com o nome `VantorPulse_<código-da-empresa>.msi`. **Não renomeie**: o código da empresa vai no nome.
+1. No painel, em **Computadores**, clique em **Baixar instalador**. O arquivo vem com o nome `DigivantPulse_<código-da-empresa>.msi`. **Não renomeie**: o código da empresa vai no nome.
 2. Dê dois cliques e avance. O computador aparece sozinho no painel em até 1 minuto.
 3. No painel, vincule o usuário do Windows ao colaborador.
 
 ### Vários computadores (TI, GPO, RMM)
 
 ```bat
-msiexec /i VantorPulse.msi TOKEN=<código-da-empresa> SERVER=https://seu-servidor /qn
+msiexec /i DigivantPulse.msi TOKEN=<código-da-empresa> SERVER=https://seu-servidor /qn
 ```
 
 ### Aviso do Windows (SmartScreen) e antivírus
@@ -52,32 +52,32 @@ Enquanto o instalador não tiver assinatura digital (pedida à [SignPath Foundat
 1. Clique em **Mais informações**.
 2. Clique em **Executar assim mesmo**.
 
-Se o antivírus bloquear, adicione uma exceção para `C:\Program Files\VantorPulse\vantor-agent.exe`. Confira o SHA-256 do arquivo com o `SHA256SUMS.txt` publicado em cada versão.
+Se o antivírus bloquear, adicione uma exceção para `C:\Program Files\DigivantPulse\digivant-agent.exe`. Confira o SHA-256 do arquivo com o `SHA256SUMS.txt` publicado em cada versão.
 
 ### Linux (Ubuntu, Debian, Mint e derivados, com sessão Xorg)
 
-1. Baixe o pacote da versão em **Releases**: `vantor-agent_<versão>_amd64.deb`, ou `_arm64.deb` para ARM.
+1. Baixe o pacote da versão em **Releases**: `digivant-agent_<versão>_amd64.deb`, ou `_arm64.deb` para ARM.
 2. Instale e matricule o computador. O código da empresa e o endereço do painel aparecem no painel, em **Computadores**:
 
    ```bash
-   sudo apt install ./vantor-agent_<versão>_amd64.deb
-   sudo vantor-agent enroll --server https://seu-servidor --token <código-da-empresa>
+   sudo apt install ./digivant-agent_<versão>_amd64.deb
+   sudo digivant-agent enroll --server https://seu-servidor --token <código-da-empresa>
    ```
-3. Cada usuário passa a ser registrado a partir do próximo login gráfico. O pacote liga o serviço `vantor-agent` do `systemd --user` para todos os usuários. O Termo de Ciência aparece numa janela do `zenity`.
+3. Cada usuário passa a ser registrado a partir do próximo login gráfico. O pacote liga o serviço `digivant-agent` do `systemd --user` para todos os usuários. O Termo de Ciência aparece numa janela do `zenity`.
 
 Limitações no Linux, por enquanto:
 - **Sessão Wayland:** o sistema esconde as janelas dos outros programas. O agente avisa no ícone e não registra. Na tela de login, escolha a sessão **Xorg** (ex.: "Ubuntu em Xorg").
 - **Sites:** o domínio do site ainda não é lido. O tempo aparece no navegador (ex.: `firefox`).
-- **Proteção dos arquivos:** não há DPAPI. O token do PC fica em `/etc/vantor-pulse`, e a chave da fila, só com permissão do próprio usuário (`0600`).
+- **Proteção dos arquivos:** não há DPAPI. O token do PC fica em `/etc/digivant-pulse`, e a chave da fila, só com permissão do próprio usuário (`0600`).
 - **Atualização:** pelo pacote novo (`apt install`). O botão "Atualizar" do painel vale só para o Windows.
 
 ### Desinstalar
 
-**Configurações → Aplicativos → Vantor Pulse → Desinstalar**, ou `msiexec /x VantorPulse.msi /qn`. No Linux: `sudo apt remove vantor-agent`. O painel avisa o gestor quando um agente para de responder no horário de trabalho.
+**Configurações → Aplicativos → Digivant Pulse → Desinstalar**, ou `msiexec /x DigivantPulse.msi /qn`. No Linux: `sudo apt remove digivant-agent`. O painel avisa o gestor quando um agente para de responder no horário de trabalho.
 
 ## Como funciona
 
-- **Serviço `VantorPulse`** (LocalSystem): matricula o PC com o código da empresa, abre o coletor em cada sessão de usuário aberta (vários usuários do Windows no mesmo PC são separados), envia o inventário a cada minuto e aplica atualizações pedidas pelo painel (baixa o MSI por HTTPS e confere o SHA-256 antes de instalar). Se for encerrado, o Windows reinicia o serviço em 5 s.
+- **Serviço `DigivantPulse`** (LocalSystem): matricula o PC com o código da empresa, abre o coletor em cada sessão de usuário aberta (vários usuários do Windows no mesmo PC são separados), envia o inventário a cada minuto e aplica atualizações pedidas pelo painel (baixa o MSI por HTTPS e confere o SHA-256 antes de instalar). Se for encerrado, o Windows reinicia o serviço em 5 s.
 - **Coletor** (na sessão do usuário): ícone na bandeja, leitura da janela em foco, agregação por minuto e envio a cada 60 s, compactado (gzip) por HTTPS.
 - **Sem internet:** os lotes ficam numa fila local SQLite, cada um criptografado com AES-256-GCM. A chave é protegida pelo DPAPI do Windows. Tudo é enviado, em ordem, quando a conexão volta.
 - **Consumo medido** (Windows 10, Chrome aberto): cerca de 0,4% de CPU e 49 MB de memória própria.
@@ -88,10 +88,10 @@ Protocolo com a API: `POST /api/agent/enroll` e `POST /api/agent/sync` (veja `in
 
 ```bash
 go test ./...
-go build -ldflags "-H windowsgui -X github.com/Magnataflowless/vantor-pulse-agent/internal/agent.Version=0.1.0" -o dist/vantor-agent.exe ./cmd/vantor-agent
+go build -ldflags "-H windowsgui -X github.com/Magnataflowless/vantor-pulse-agent/internal/agent.Version=0.1.0" -o dist/digivant-agent.exe ./cmd/digivant-agent
 ```
 
-O instalador é gerado pelo GitHub Actions a cada tag `v*` (WiX Toolset v5, gratuito) e publicado em **Releases**, junto com os pacotes `.deb` do Linux (nfpm, gratuito). Para testar no Linux: `CGO_ENABLED=0 GOOS=linux go build -o vantor-agent ./cmd/vantor-agent` e `./vantor-agent test`.
+O instalador é gerado pelo GitHub Actions a cada tag `v*` (WiX Toolset v5, gratuito) e publicado em **Releases**, junto com os pacotes `.deb` do Linux (nfpm, gratuito). Para testar no Linux: `CGO_ENABLED=0 GOOS=linux go build -o digivant-agent ./cmd/digivant-agent` e `./digivant-agent test`.
 Ícones da bandeja: `go run ./tools/mkicon`.
 
 Sistemas: Windows 10 e 11, e Linux com Xorg. O macOS fica para depois, porque a Apple cobra para assinar aplicativos.

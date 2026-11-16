@@ -28,25 +28,25 @@ jobs:
           if [[ "$GITHUB_REF" == refs/tags/v* ]]; then echo "version=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT; else echo "version=0.0.$GITHUB_RUN_NUMBER" >> $GITHUB_OUTPUT; fi
       - name: Build (sem console, roda como serviço)
         shell: bash
-        run: go build -trimpath -ldflags "-s -w -H windowsgui -X github.com/Magnataflowless/vantor-pulse-agent/internal/agent.Version=${{ steps.v.outputs.version }}" -o dist/vantor-agent.exe ./cmd/vantor-agent
+        run: go build -trimpath -ldflags "-s -w -H windowsgui -X github.com/Magnataflowless/vantor-pulse-agent/internal/agent.Version=${{ steps.v.outputs.version }}" -o dist/digivant-agent.exe ./cmd/digivant-agent
       - name: Instalador MSI (WiX v5, gratuito)
         shell: bash
         run: |
           dotnet tool install --global wix --version 5.0.2
-          # Endereço padrão do servidor (variável do repositório VANTOR_SERVER); sem ele, instale com SERVER=https://...
-          extra=(); [ -n "${{ vars.VANTOR_SERVER }}" ] && extra=(-d "DefaultServer=${{ vars.VANTOR_SERVER }}")
-          wix build installer/vantor.wxs -arch x64 -d Version=${{ steps.v.outputs.version }} -d BinDir=dist "${extra[@]}" -o dist/VantorPulse.msi
-          sha256sum dist/VantorPulse.msi dist/vantor-agent.exe | tee dist/SHA256SUMS.txt
+          # Endereço padrão do servidor (variável do repositório DIGIVANT_SERVER); sem ele, instale com SERVER=https://...
+          extra=(); [ -n "${{ vars.DIGIVANT_SERVER }}" ] && extra=(-d "DefaultServer=${{ vars.DIGIVANT_SERVER }}")
+          wix build installer/digivant.wxs -arch x64 -d Version=${{ steps.v.outputs.version }} -d BinDir=dist "${extra[@]}" -o dist/DigivantPulse.msi
+          sha256sum dist/DigivantPulse.msi dist/digivant-agent.exe | tee dist/SHA256SUMS.txt
       - uses: actions/upload-artifact@v4
         with:
-          name: vantor-agent-${{ steps.v.outputs.version }}
+          name: digivant-agent-${{ steps.v.outputs.version }}
           path: dist/
       - name: Publicar versão
         if: startsWith(github.ref, 'refs/tags/v')
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" dist/VantorPulse.msi dist/vantor-agent.exe dist/SHA256SUMS.txt --title "Vantor Pulse $GITHUB_REF_NAME" --notes "Instalador do agente. SHA-256 em SHA256SUMS.txt."
+        run: gh release create "$GITHUB_REF_NAME" dist/DigivantPulse.msi dist/digivant-agent.exe dist/SHA256SUMS.txt --title "Digivant Pulse $GITHUB_REF_NAME" --notes "Instalador do agente. SHA-256 em SHA256SUMS.txt."
 
   linux:
     runs-on: ubuntu-latest
@@ -65,31 +65,31 @@ jobs:
       - name: Build (amd64 e arm64, Go puro, sem cgo)
         run: |
           for arch in amd64 arm64; do
-            CGO_ENABLED=0 GOOS=linux GOARCH=$arch go build -trimpath -ldflags "-s -w -X github.com/Magnataflowless/vantor-pulse-agent/internal/agent.Version=${{ steps.v.outputs.version }}" -o dist/vantor-agent-linux-$arch ./cmd/vantor-agent
+            CGO_ENABLED=0 GOOS=linux GOARCH=$arch go build -trimpath -ldflags "-s -w -X github.com/Magnataflowless/vantor-pulse-agent/internal/agent.Version=${{ steps.v.outputs.version }}" -o dist/digivant-agent-linux-$arch ./cmd/digivant-agent
           done
       - name: Pacotes .deb (nfpm, gratuito)
         run: |
           go install github.com/goreleaser/nfpm/v2/cmd/nfpm@v2.41.1
           mkdir -p dist/pkg
           for arch in amd64 arm64; do
-            cp dist/vantor-agent-linux-$arch dist/pkg/vantor-agent # o nfpm não expande variáveis no caminho dos arquivos
-            ARCH=$arch VERSION=${{ steps.v.outputs.version }} nfpm package -f packaging/linux/nfpm.yaml -p deb -t dist/vantor-agent_${{ steps.v.outputs.version }}_$arch.deb
+            cp dist/digivant-agent-linux-$arch dist/pkg/digivant-agent # o nfpm não expande variáveis no caminho dos arquivos
+            ARCH=$arch VERSION=${{ steps.v.outputs.version }} nfpm package -f packaging/linux/nfpm.yaml -p deb -t dist/digivant-agent_${{ steps.v.outputs.version }}_$arch.deb
           done
-          (cd dist && sha256sum *.deb vantor-agent-linux-* | tee SHA256SUMS-linux.txt)
+          (cd dist && sha256sum *.deb digivant-agent-linux-* | tee SHA256SUMS-linux.txt)
       - name: Conferência do pacote
         run: |
-          dpkg-deb -c dist/vantor-agent_*_amd64.deb
-          sudo dpkg -i dist/vantor-agent_*_amd64.deb
-          vantor-agent version
-          test -f /usr/lib/systemd/user/vantor-agent.service
+          dpkg-deb -c dist/digivant-agent_*_amd64.deb
+          sudo dpkg -i dist/digivant-agent_*_amd64.deb
+          digivant-agent version
+          test -f /usr/lib/systemd/user/digivant-agent.service
           # Sem servidor, a matrícula falha com mensagem clara (e sem travar).
-          ! sudo vantor-agent enroll 2>&1 | tee /dev/stderr | grep -q panic
+          ! sudo digivant-agent enroll 2>&1 | tee /dev/stderr | grep -q panic
       - uses: actions/upload-artifact@v4
         with:
-          name: vantor-agent-linux-${{ steps.v.outputs.version }}
+          name: digivant-agent-linux-${{ steps.v.outputs.version }}
           path: |
             dist/*.deb
-            dist/vantor-agent-linux-*
+            dist/digivant-agent-linux-*
             dist/SHA256SUMS-linux.txt
       - name: Publicar versão
         if: startsWith(github.ref, 'refs/tags/v')
@@ -98,4 +98,4 @@ jobs:
         run: |
           # O job do Windows cria a versão; espera ela existir e anexa os arquivos do Linux.
           for i in $(seq 1 30); do gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 && break; sleep 20; done
-          gh release upload "$GITHUB_REF_NAME" dist/*.deb dist/vantor-agent-linux-* dist/SHA256SUMS-linux.txt --clobber
+          gh release upload "$GITHUB_REF_NAME" dist/*.deb dist/digivant-agent-linux-* dist/SHA256SUMS-linux.txt --clobber

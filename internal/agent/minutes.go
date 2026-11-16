@@ -1,4 +1,4 @@
-// Package agent é o coletor do Vantor Pulse. Este arquivo agrega amostras em minutos,
+// Package agent é o coletor do Digivant Pulse. Este arquivo agrega amostras em minutos,
 // no formato que a API espera (uma linha por minuto, com o tempo de cada app). Não depende do Windows.
 package agent
 

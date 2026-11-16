@@ -35,8 +35,8 @@ var (
 type rect struct{ Left, Top, Right, Bottom int32 }
 
 // Pastas: ProgramData (do PC, escrita pelo serviço) e LocalAppData (de cada usuário, escrita pelo coletor).
-func MachineDir() string { return filepath.Join(os.Getenv("ProgramData"), "VantorPulse") }
-func UserDir() string    { return filepath.Join(os.Getenv("LOCALAPPDATA"), "VantorPulse") }
+func MachineDir() string { return filepath.Join(os.Getenv("ProgramData"), "DigivantPulse") }
+func UserDir() string    { return filepath.Join(os.Getenv("LOCALAPPDATA"), "DigivantPulse") }
 
 // IsLocked: tela de bloqueio ou de login do Windows em foco.
 func IsLocked(exe string) bool { return exe == "lockapp.exe" || exe == "logonui.exe" }

@@ -141,7 +141,7 @@ func (c *Client) post(path string, body any, gz bool, out any) error {
 		return err
 	}
 	req.Header.Set("content-type", "application/json")
-	req.Header.Set("user-agent", "vantor-agent/"+Version)
+	req.Header.Set("user-agent", "digivant-agent/"+Version)
 	if gz {
 		req.Header.Set("content-encoding", "gzip")
 	}
